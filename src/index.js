@@ -28,15 +28,23 @@ async function nrFetch(path, { method = "GET", body } = {}) {
     },
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
+  const contentType = res.headers.get("content-type") || "";
+  const raw = await res.text();
   let json = null;
-  try {
-    json = await res.json();
-  } catch {
-    /* empty/non-JSON body is fine, e.g. 204 on deploy */
+  let bodyPreview;
+  if (raw) {
+    try {
+      json = JSON.parse(raw);
+    } catch {
+      // Non-JSON body (e.g. an HTML login/error page from an auth proxy) —
+      // surface a preview instead of silently returning null, since that
+      // looks identical to "empty body" otherwise and hides real auth failures.
+      bodyPreview = raw.slice(0, 200);
+    }
   }
   return {
     ok: res.ok,
-    debug: { status: res.status, endpoint: `${method} ${path}` },
+    debug: { status: res.status, endpoint: `${method} ${path}`, contentType, ...(bodyPreview ? { bodyPreview } : {}) },
     data: json,
   };
 }
