@@ -5,9 +5,5 @@ services:
     restart: unless-stopped
     ports:
       - "3000:3000"
-    environment:
-      NODE_RED_URL: ${NODE_RED_URL}
-      NODE_RED_USERNAME: ${NODE_RED_USERNAME}
-      NODE_RED_PASSWORD: ${NODE_RED_PASSWORD}
-      MCP_API_KEY: ${MCP_API_KEY}
-      PORT: ${PORT:-3000}
+    volumes:
+      - /opt/nodered-mcp/secrets/.env:/app/.env:ro

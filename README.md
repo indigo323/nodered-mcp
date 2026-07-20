@@ -20,7 +20,17 @@ No third-party Node-RED client libraries — plain `fetch` calls only.
 
 ## Config
 
-Copy `.env.example` to `.env` and set:
+The container reads its config from a host-mounted `.env` file at `/app/.env`
+(loaded via `dotenv/config`), not from compose `environment:` entries or
+Portainer stack variables — see `docker-compose.yml`'s volume mount. On the
+deployment host, create the secrets directory and file yourself (mode 700 /
+600, root-owned) rather than entering values through Portainer's UI:
+
+```
+/opt/nodered-mcp/secrets/.env
+```
+
+using the format in `.env.example`:
 - `NODE_RED_URL` — base URL of the Node-RED instance
 - `NODE_RED_USERNAME` / `NODE_RED_PASSWORD` — HTTP Basic credentials for the
   auth proxy in front of Node-RED (sent as `Authorization: Basic ...`)
