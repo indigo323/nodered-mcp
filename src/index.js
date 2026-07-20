@@ -4,13 +4,16 @@ import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/
 import { z } from "zod";
 
 const NODE_RED_URL = process.env.NODE_RED_URL;
-const NODE_RED_TOKEN = process.env.NODE_RED_TOKEN;
+const NODE_RED_USERNAME = process.env.NODE_RED_USERNAME;
+const NODE_RED_PASSWORD = process.env.NODE_RED_PASSWORD;
 const PORT = process.env.PORT || 3000;
 
-if (!NODE_RED_URL || !NODE_RED_TOKEN) {
-  console.error("NODE_RED_URL and NODE_RED_TOKEN must be set");
+if (!NODE_RED_URL || !NODE_RED_USERNAME || !NODE_RED_PASSWORD) {
+  console.error("NODE_RED_URL, NODE_RED_USERNAME, and NODE_RED_PASSWORD must be set");
   process.exit(1);
 }
+
+const NODE_RED_BASIC_AUTH = Buffer.from(`${NODE_RED_USERNAME}:${NODE_RED_PASSWORD}`).toString("base64");
 
 // Single helper — every tool result includes ok + debug so failures are visible
 // to the caller instead of being swallowed by the MCP layer.
@@ -19,7 +22,7 @@ async function nrFetch(path, { method = "GET", body } = {}) {
   const res = await fetch(url, {
     method,
     headers: {
-      Authorization: `Bearer ${NODE_RED_TOKEN}`,
+      Authorization: `Basic ${NODE_RED_BASIC_AUTH}`,
       "Content-Type": "application/json",
     },
     body: body !== undefined ? JSON.stringify(body) : undefined,
@@ -150,6 +153,20 @@ function buildServer() {
 
 const app = express();
 app.use(express.json());
+
+const MCP_API_KEY = process.env.MCP_API_KEY;
+if (!MCP_API_KEY) {
+  console.error("MCP_API_KEY must be set");
+  process.exit(1);
+}
+
+app.use("/mcp", (req, res, next) => {
+  const key = req.headers["x-api-key"];
+  if (!key || key !== MCP_API_KEY) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+  next();
+});
 
 // Stateless streamable-HTTP: fresh server+transport per request.
 // Simpler and safer for a small internal tool — no session store to leak or expire.

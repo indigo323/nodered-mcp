@@ -7,5 +7,7 @@ services:
       - "3000:3000"
     environment:
       NODE_RED_URL: ${NODE_RED_URL}
-      NODE_RED_TOKEN: ${NODE_RED_TOKEN}
+      NODE_RED_USERNAME: ${NODE_RED_USERNAME}
+      NODE_RED_PASSWORD: ${NODE_RED_PASSWORD}
+      MCP_API_KEY: ${MCP_API_KEY}
       PORT: ${PORT:-3000}

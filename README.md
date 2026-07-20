@@ -20,7 +20,14 @@ No third-party Node-RED client libraries — plain `fetch` calls only.
 
 ## Config
 
-Copy `.env.example` to `.env` and set `NODE_RED_URL` / `NODE_RED_TOKEN`.
+Copy `.env.example` to `.env` and set:
+- `NODE_RED_URL` — base URL of the Node-RED instance
+- `NODE_RED_USERNAME` / `NODE_RED_PASSWORD` — HTTP Basic credentials for the
+  auth proxy in front of Node-RED (sent as `Authorization: Basic ...`)
+- `MCP_API_KEY` — random key required as an `x-api-key` header on every
+  request to `/mcp`. This server has no Node-RED-side auth of its own beyond
+  what Node-RED enforces, so `MCP_API_KEY` is the only thing gating access to
+  it directly — generate a long random value and don't reuse it elsewhere.
 
 ## Run
 
