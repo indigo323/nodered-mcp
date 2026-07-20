@@ -25,6 +25,10 @@ async function nrFetch(path, { method = "GET", body } = {}) {
     headers: {
       Authorization: `Basic ${NODE_RED_BASIC_AUTH}`,
       "Content-Type": "application/json",
+      // Without this, GET /flows returns a bare array (Node-RED's default v1
+      // shape) instead of {rev, flows: [...]} — list_flows's r.data?.flows
+      // silently reads as undefined/empty against a v1 response.
+      "Node-RED-API-Version": "v2",
     },
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
