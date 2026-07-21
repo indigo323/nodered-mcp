@@ -136,11 +136,25 @@ function buildServer() {
 
   server.tool(
     "get_context",
-    "Read Node-RED global context variables (requires Context API enabled on the target instance).",
-    {},
-    async () => {
-      const r = await nrFetch("/context/global");
+    "Read Node-RED context variables (requires Context API enabled on the target instance).",
+    {
+      scope: z.enum(["global", "flow"]).default("global").describe("Context scope"),
+      id: z.string().optional().describe("Flow id, required when scope is 'flow'"),
+    },
+    async ({ scope, id }) => {
+      const path = scope === "flow" ? `/context/flow/${encodeURIComponent(id)}` : "/context/global";
+      const r = await nrFetch(path);
       return toolResult({ ok: r.ok, debug: r.debug, context: r.data });
+    }
+  );
+
+  server.tool(
+    "inject_node",
+    "Manually fire an already-deployed inject node by id via POST /inject/:id. Cannot inject arbitrary new data -- only re-fires whatever payload that node was already deployed with.",
+    { id: z.string().describe("Inject node id") },
+    async ({ id }) => {
+      const r = await nrFetch(`/inject/${encodeURIComponent(id)}`, { method: "POST" });
+      return toolResult({ ok: r.ok, debug: r.debug, result: r.data });
     }
   );
 
